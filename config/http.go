@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/gin-gonic/gin/render"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/gin"
@@ -22,7 +23,9 @@ func init() {
 					return ginfacades.Route("gin"), nil
 				},
 				// Optional, default is http/template
-				"template": gin.DefaultTemplate,
+				"template": func() (render.HTMLRender, error) {
+					return gin.DefaultTemplate()
+				},
 			},
 		},
 		// HTTP URL

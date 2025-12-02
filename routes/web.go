@@ -18,6 +18,6 @@ func Web() {
 	facades.Route().Get("/activities/create", func(ctx http.Context) http.Response {
 		// log loading the activity creator page
 		facades.Log().Info("Loading activity creator page")
-		return ctx.Response().View().Make("activities_create.tmpl", map[string]any{})
+		return ctx.Response().View().Make("activities/create.tmpl", map[string]any{})
 	})
 }
