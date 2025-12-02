@@ -1,0 +1,483 @@
+{{ define "activities_create.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Activity Creator - Activity Service</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-pending { background-color: #f59e0b; }
+        .status-processing { background-color: #3b82f6; animation: pulse 2s infinite; }
+        .status-success { background-color: #10b981; }
+        .status-error { background-color: #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Activity Creator</h1>
+            <p class="text-gray-600">Create multiple activities with configurable delays between API requests</p>
+            <a href="/" class="text-blue-600 hover:text-blue-800 text-sm">&larr; Back to Home</a>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Configuration</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label for="activityCount" class="block text-sm font-medium text-gray-700 mb-2">
+                        Number of Activities
+                    </label>
+                    <input type="number" id="activityCount" min="1" max="50" value="5" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">1-50 activities</p>
+                </div>
+                
+                <div>
+                    <label for="delaySeconds" class="block text-sm font-medium text-gray-700 mb-2">
+                        Delay Between Requests
+                    </label>
+                    <select id="delaySeconds" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="1">1 second</option>
+                        <option value="2" selected>2 seconds</option>
+                        <option value="3">3 seconds</option>
+                        <option value="4">4 seconds</option>
+                        <option value="5">5 seconds</option>
+                        <option value="6">6 seconds</option>
+                        <option value="7">7 seconds</option>
+                        <option value="8">8 seconds</option>
+                        <option value="9">9 seconds</option>
+                        <option value="10">10 seconds</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="activityType" class="block text-sm font-medium text-gray-700 mb-2">
+                        Activity Type
+                    </label>
+                    <select id="activityType" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="user_action">User Action</option>
+                        <option value="system_event">System Event</option>
+                        <option value="api_call">API Call</option>
+                        <option value="data_sync">Data Sync</option>
+                        <option value="notification">Notification</option>
+                        <option value="test_activity">Test Activity</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
+                        Priority
+                    </label>
+                    <select id="priority" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="low">Low</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Base Description (will be numbered automatically)
+                </label>
+                <input type="text" id="description" value="Batch created activity" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Enter base description for activities">
+            </div>
+            
+            <div class="flex gap-4">
+                <button id="startCreation" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Start Creating Activities
+                </button>
+                
+                <button id="stopCreation" 
+                        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled>
+                    Stop Creation
+                </button>
+                
+                <button id="clearResults" 
+                        class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200">
+                    Clear Results
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Progress</h2>
+            
+            <div class="mb-4">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span id="progressText">0 / 0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progressBar" class="bg-blue-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-yellow-50 rounded-lg p-3">
+                    <div class="text-2xl font-bold text-yellow-600" id="pendingCount">0</div>
+                    <div class="text-sm text-gray-600">Pending</div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-3">
+                    <div class="text-2xl font-bold text-blue-600" id="processingCount">0</div>
+                    <div class="text-sm text-gray-600">Processing</div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-3">
+                    <div class="text-2xl font-bold text-green-600" id="successCount">0</div>
+                    <div class="text-sm text-gray-600">Success</div>
+                </div>
+                <div class="bg-red-50 rounded-lg p-3">
+                    <div class="text-2xl font-bold text-red-600" id="errorCount">0</div>
+                    <div class="text-sm text-gray-600">Error</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Activity Creation Results</h2>
+            
+            <div id="noResults" class="text-center text-gray-500 py-8">
+                No activities created yet. Configure settings above and click "Start Creating Activities" to begin.
+            </div>
+            
+            <div id="resultsList" class="space-y-2 hidden">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+        
+        <!-- API Response Details Modal -->
+        <div id="responseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                <div class="p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">API Response Details</h3>
+                    <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto max-h-[60vh]">
+                    <pre id="responseContent" class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let creationState = {
+            isRunning: false,
+            currentIndex: 0,
+            totalCount: 0,
+            results: [],
+            timeoutId: null
+        };
+
+        // DOM elements
+        const elements = {
+            activityCount: document.getElementById('activityCount'),
+            delaySeconds: document.getElementById('delaySeconds'),
+            activityType: document.getElementById('activityType'),
+            priority: document.getElementById('priority'),
+            description: document.getElementById('description'),
+            startBtn: document.getElementById('startCreation'),
+            stopBtn: document.getElementById('stopCreation'),
+            clearBtn: document.getElementById('clearResults'),
+            progressSection: document.getElementById('progressSection'),
+            progressBar: document.getElementById('progressBar'),
+            progressText: document.getElementById('progressText'),
+            pendingCount: document.getElementById('pendingCount'),
+            processingCount: document.getElementById('processingCount'),
+            successCount: document.getElementById('successCount'),
+            errorCount: document.getElementById('errorCount'),
+            noResults: document.getElementById('noResults'),
+            resultsList: document.getElementById('resultsList'),
+            responseModal: document.getElementById('responseModal'),
+            responseContent: document.getElementById('responseContent'),
+            closeModal: document.getElementById('closeModal')
+        };
+
+        // Event listeners
+        elements.startBtn.addEventListener('click', startCreation);
+        elements.stopBtn.addEventListener('click', stopCreation);
+        elements.clearBtn.addEventListener('click', clearResults);
+        elements.closeModal.addEventListener('click', closeModal);
+        elements.responseModal.addEventListener('click', (e) => {
+            if (e.target === elements.responseModal) closeModal();
+        });
+
+        // Start activity creation process
+        function startCreation() {
+            const count = parseInt(elements.activityCount.value);
+            const delay = parseInt(elements.delaySeconds.value) * 1000;
+            
+            if (count < 1 || count > 50) {
+                alert('Please enter a number between 1 and 50 for the activity count.');
+                return;
+            }
+
+            // Initialize state
+            creationState = {
+                isRunning: true,
+                currentIndex: 0,
+                totalCount: count,
+                results: [],
+                timeoutId: null
+            };
+
+            // Update UI
+            elements.startBtn.disabled = true;
+            elements.stopBtn.disabled = false;
+            elements.progressSection.classList.remove('hidden');
+            elements.noResults.classList.add('hidden');
+            elements.resultsList.classList.remove('hidden');
+            elements.resultsList.innerHTML = '';
+
+            // Initialize progress display
+            updateProgress();
+            updateCounters();
+
+            // Start the creation process
+            console.log(`Starting creation of ${count} activities with ${delay}ms delay`);
+            createNextActivity(delay);
+        }
+
+        // Stop activity creation process
+        function stopCreation() {
+            creationState.isRunning = false;
+            if (creationState.timeoutId) {
+                clearTimeout(creationState.timeoutId);
+                creationState.timeoutId = null;
+            }
+            
+            elements.startBtn.disabled = false;
+            elements.stopBtn.disabled = true;
+            console.log('Activity creation stopped by user');
+        }
+
+        // Clear all results
+        function clearResults() {
+            if (creationState.isRunning) {
+                stopCreation();
+            }
+            
+            creationState.results = [];
+            elements.resultsList.innerHTML = '';
+            elements.resultsList.classList.add('hidden');
+            elements.noResults.classList.remove('hidden');
+            elements.progressSection.classList.add('hidden');
+            
+            console.log('Results cleared');
+        }
+
+        // Create next activity in sequence
+        function createNextActivity(delay) {
+            if (!creationState.isRunning || creationState.currentIndex >= creationState.totalCount) {
+                // Creation completed or stopped
+                elements.startBtn.disabled = false;
+                elements.stopBtn.disabled = true;
+                creationState.isRunning = false;
+                console.log('Activity creation completed');
+                return;
+            }
+
+            const activityNumber = creationState.currentIndex + 1;
+            const activityData = {
+                name: `${elements.description.value} #${activityNumber}`,
+                description: `${elements.description.value} #${activityNumber} - Created at ${new Date().toLocaleString()}`,
+                type: elements.activityType.value,
+                status: 'active',
+                metadata: {
+                    batch_id: Date.now(),
+                    sequence: activityNumber,
+                    total_in_batch: creationState.totalCount,
+                    priority: elements.priority.value,
+                    created_via: 'web_interface'
+                }
+            };
+
+            // Add to results with pending status
+            const result = {
+                index: creationState.currentIndex,
+                status: 'pending',
+                data: activityData,
+                timestamp: new Date().toISOString(),
+                response: null,
+                error: null
+            };
+            
+            creationState.results.push(result);
+            addResultToUI(result);
+            updateProgress();
+            updateCounters();
+
+            // Update status to processing
+            setTimeout(() => {
+                result.status = 'processing';
+                updateResultInUI(result);
+                updateCounters();
+                
+                // Make API call
+                createActivity(activityData, result);
+            }, 100);
+
+            creationState.currentIndex++;
+
+            // Schedule next creation
+            if (creationState.currentIndex < creationState.totalCount && creationState.isRunning) {
+                creationState.timeoutId = setTimeout(() => createNextActivity(delay), delay);
+            }
+        }
+
+        // Make API call to create activity
+        async function createActivity(activityData, result) {
+            try {
+                const response = await fetch('/api/activities', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(activityData)
+                });
+
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    result.status = 'success';
+                    result.response = responseData;
+                } else {
+                    result.status = 'error';
+                    result.error = responseData.message || 'Unknown error occurred';
+                    result.response = responseData;
+                }
+            } catch (error) {
+                result.status = 'error';
+                result.error = error.message;
+            }
+
+            updateResultInUI(result);
+            updateCounters();
+        }
+
+        // Add result to UI
+        function addResultToUI(result) {
+            const resultElement = document.createElement('div');
+            resultElement.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+            resultElement.id = `result-${result.index}`;
+            
+            resultElement.innerHTML = `
+                <div class="flex items-center">
+                    <span class="status-dot status-${result.status}"></span>
+                    <span class="font-medium text-gray-900">Activity #${result.index + 1}</span>
+                    <span class="ml-3 text-sm text-gray-600">${result.data.name}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-gray-500">${new Date(result.timestamp).toLocaleTimeString()}</span>
+                    ${result.status === 'success' || result.status === 'error' ? 
+                        `<button onclick="showResponse(${result.index})" class="text-xs text-blue-600 hover:text-blue-800">View Details</button>` :
+                        ''
+                    }
+                </div>
+            `;
+            
+            elements.resultsList.appendChild(resultElement);
+        }
+
+        // Update result in UI
+        function updateResultInUI(result) {
+            const resultElement = document.getElementById(`result-${result.index}`);
+            if (resultElement) {
+                const statusDot = resultElement.querySelector('.status-dot');
+                statusDot.className = `status-dot status-${result.status}`;
+                
+                // Add view details button if completed
+                if ((result.status === 'success' || result.status === 'error') && !resultElement.querySelector('button')) {
+                    const actionsDiv = resultElement.querySelector('.flex.items-center.space-x-2');
+                    actionsDiv.innerHTML += `<button onclick="showResponse(${result.index})" class="text-xs text-blue-600 hover:text-blue-800">View Details</button>`;
+                }
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const completed = creationState.results.filter(r => r.status === 'success' || r.status === 'error').length;
+            const percentage = creationState.totalCount > 0 ? (completed / creationState.totalCount) * 100 : 0;
+            
+            elements.progressBar.style.width = `${percentage}%`;
+            elements.progressText.textContent = `${completed} / ${creationState.totalCount}`;
+        }
+
+        // Update status counters
+        function updateCounters() {
+            const pending = creationState.results.filter(r => r.status === 'pending').length;
+            const processing = creationState.results.filter(r => r.status === 'processing').length;
+            const success = creationState.results.filter(r => r.status === 'success').length;
+            const error = creationState.results.filter(r => r.status === 'error').length;
+            
+            elements.pendingCount.textContent = pending;
+            elements.processingCount.textContent = processing;
+            elements.successCount.textContent = success;
+            elements.errorCount.textContent = error;
+        }
+
+        // Show API response details in modal
+        function showResponse(index) {
+            const result = creationState.results[index];
+            if (result && (result.response || result.error)) {
+                const content = result.response || { error: result.error };
+                elements.responseContent.textContent = JSON.stringify(content, null, 2);
+                elements.responseModal.classList.remove('hidden');
+                elements.responseModal.classList.add('flex');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            elements.responseModal.classList.add('hidden');
+            elements.responseModal.classList.remove('flex');
+        }
+
+        // Make showResponse available globally
+        window.showResponse = showResponse;
+    </script>
+</body>
+</html>
+{{ end }}

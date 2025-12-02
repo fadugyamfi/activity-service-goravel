@@ -1,0 +1,165 @@
+{{ define "welcome.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <title>Activity Service - Welcome</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Bootstrap CSS from resources -->
+    <link href="/resources/css/app.css" rel="stylesheet">
+    
+    <style>
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="antialiased bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div id="app" v-cloak class="min-h-screen flex flex-col justify-center items-center">
+        <!-- Navigation -->
+        <nav class="w-full bg-white shadow-md">
+            <div class="container mx-auto px-4 py-4">
+                <h1 class="text-2xl font-bold text-blue-600">Activity Service</h1>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow w-full flex items-center justify-center py-12 px-4">
+            <div class="max-w-2xl w-full">
+                <!-- Hero Section -->
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="card-header bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-12 text-white">
+                        <h2 class="text-4xl font-bold mb-4">Welcome to Activity Service</h2>
+                        <p class="text-lg opacity-90">A modern activity management platform built with Goravel and Kafka</p>
+                    </div>
+
+                    <div class="card-body px-8 py-8">
+                        <!-- Status Section -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                                <h3 class="font-semibold text-green-900">API Status</h3>
+                                <p class="text-green-700">✅ Operational</p>
+                            </div>
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                                <h3 class="font-semibold text-blue-900">Kafka</h3>
+                                <p class="text-blue-700">✅ Connected</p>
+                            </div>
+                            <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded">
+                                <h3 class="font-semibold text-indigo-900">Database</h3>
+                                <p class="text-indigo-700">✅ Ready</p>
+                            </div>
+                        </div>
+
+                        <!-- Features Section -->
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Features</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-center text-gray-700">
+                                    <span class="text-green-500 mr-3">✓</span>
+                                    <span>RESTful API for activity management (CRUD operations)</span>
+                                </li>
+                                <li class="flex items-center text-gray-700">
+                                    <span class="text-green-500 mr-3">✓</span>
+                                    <span>Apache Kafka event streaming and message queue</span>
+                                </li>
+                                <li class="flex items-center text-gray-700">
+                                    <span class="text-green-500 mr-3">✓</span>
+                                    <span>MySQL database with migrations</span>
+                                </li>
+                                <li class="flex items-center text-gray-700">
+                                    <span class="text-green-500 mr-3">✓</span>
+                                    <span>Real-time event processing and consumer</span>
+                                </li>
+                                <li class="flex items-center text-gray-700">
+                                    <span class="text-green-500 mr-3">✓</span>
+                                    <span>Complete JavaScript frontend with Tailwind CSS</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Quick Links Section -->
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Quick Links</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <a href="/activities/create" class="btn btn-primary w-full block px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-center transition-colors">
+                                    ✨ Activity Creator
+                                </a>
+                                <a href="/api/activities" class="btn btn-primary w-full block px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-center transition-colors">
+                                    📊 View Activities API
+                                </a>
+                                <a href="/api/health" class="btn btn-success w-full block px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg text-center transition-colors">
+                                    ❤️ Health Check
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- API Examples Section -->
+                        <div class="bg-gray-900 text-gray-100 rounded-lg p-6 mb-8 overflow-x-auto">
+                            <h3 class="text-xl font-bold text-white mb-4">API Examples</h3>
+                            
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-400 mb-2">Get all activities:</p>
+                                <pre class="text-sm"><code>curl http://localhost:8000/api/activities</code></pre>
+                            </div>
+
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-400 mb-2">Create an activity:</p>
+                                <pre class="text-sm"><code>curl -X POST http://localhost:8000/api/activities \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Task",
+    "type": "task",
+    "description": "Task description",
+    "status": "active"
+  }'</code></pre>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-400 mb-2">Check service health:</p>
+                                <pre class="text-sm"><code>curl http://localhost:8000/api/health</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Documentation Link -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-2">📚 Documentation</h3>
+                            <p class="text-blue-700 mb-4">For detailed information, see:</p>
+                            <ul class="list-disc list-inside text-blue-700 space-y-1">
+                                <li>MIGRATION_GUIDE.md - Quick start guide</li>
+                                <li>KAFKA_CONFIG.md - Kafka configuration</li>
+                                <li>COMPLETION_CHECKLIST.md - Implementation details</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-gray-50 px-8 py-6 border-t border-gray-200">
+                        <p class="text-center text-gray-600">
+                            <span class="font-semibold">Activity Service</span> | 
+                            <span>Built with Goravel & Kafka</span> | 
+                            <span>{{ .version }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="w-full bg-gray-800 text-white text-center py-6 mt-12">
+            <p>&copy; 2025 Activity Service. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Application Scripts -->
+    <script src="/resources/js/app.js" defer></script>
+</body>
+</html>
+{{ end }}
+
