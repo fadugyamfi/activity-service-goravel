@@ -17,6 +17,7 @@ func (r *M20250101000005CreateBaySessionPlayersTable) Up() error {
 	return facades.Schema().Create("bay_session_players", func(table schema.Blueprint) {
 		table.ID("id")
 		table.UnsignedBigInteger("bay_session_id")
+		table.UnsignedBigInteger("bay_session_location_id")
 		table.String("player_id")
 		table.TimestampsTz()
 		table.SoftDeletesTz()
