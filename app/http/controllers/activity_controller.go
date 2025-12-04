@@ -28,7 +28,7 @@ func (r *ActivityController) Index(ctx http.Context) http.Response {
 	q := facades.Orm().Query()
 
 	if q == nil {
-		return ctx.Response().Status(500).Json(map[string]interface{}{
+		return ctx.Response().Status(500).Json(map[string]any{
 			"error": "Database connection failed",
 		})
 	}
@@ -67,9 +67,9 @@ func (r *ActivityController) Index(ctx http.Context) http.Response {
 	total, err := q.Table("activities").Count()
 	if err != nil {
 		// If database is not accessible, return empty list
-		return ctx.Response().Success().Json(map[string]interface{}{
+		return ctx.Response().Success().Json(map[string]any{
 			"data": []models.Activity{},
-			"pagination": map[string]interface{}{
+			"pagination": map[string]any{
 				"total":        0,
 				"per_page":     perPage,
 				"current_page": page,
@@ -82,7 +82,7 @@ func (r *ActivityController) Index(ctx http.Context) http.Response {
 	// Fetch paginated results
 	offset := (page - 1) * perPage
 	if err := q.OrderBy("created_at", "desc").Offset(offset).Limit(perPage).Find(&activities); err != nil {
-		return ctx.Response().Status(500).Json(map[string]interface{}{
+		return ctx.Response().Status(500).Json(map[string]any{
 			"error": err.Error(),
 		})
 	}
@@ -96,9 +96,9 @@ func (r *ActivityController) Index(ctx http.Context) http.Response {
 		lastPage = (total + int64(perPage) - 1) / int64(perPage)
 	}
 
-	return ctx.Response().Success().Json(map[string]interface{}{
+	return ctx.Response().Success().Json(map[string]any{
 		"data": activities,
-		"pagination": map[string]interface{}{
+		"pagination": map[string]any{
 			"total":        total,
 			"per_page":     perPage,
 			"current_page": page,
@@ -113,14 +113,14 @@ func (r *ActivityController) Store(ctx http.Context) http.Response {
 
 	// Parse request body
 	if err := ctx.Request().Bind(&activity); err != nil {
-		return ctx.Response().Status(400).Json(map[string]interface{}{
+		return ctx.Response().Status(400).Json(map[string]any{
 			"error": "Invalid request body",
 		})
 	}
 
 	// Validate required fields
 	if activity.Name == "" || activity.Type == "" {
-		return ctx.Response().Status(400).Json(map[string]interface{}{
+		return ctx.Response().Status(400).Json(map[string]any{
 			"error": "name and type are required",
 		})
 	}
@@ -132,7 +132,7 @@ func (r *ActivityController) Store(ctx http.Context) http.Response {
 
 	// Create activity
 	if err := facades.Orm().Query().Create(&activity); err != nil {
-		return ctx.Response().Status(500).Json(map[string]interface{}{
+		return ctx.Response().Status(500).Json(map[string]any{
 			"error": err.Error(),
 		})
 	}
@@ -143,7 +143,7 @@ func (r *ActivityController) Store(ctx http.Context) http.Response {
 		// Don't return error - the activity was created successfully
 	}
 
-	return ctx.Response().Status(201).Json(map[string]interface{}{
+	return ctx.Response().Status(201).Json(map[string]any{
 		"message": "Activity created successfully",
 		"data":    activity,
 	})
@@ -155,12 +155,12 @@ func (r *ActivityController) Show(ctx http.Context) http.Response {
 	var activity models.Activity
 
 	if err := facades.Orm().Query().Where("id = ?", id).First(&activity).Error; err != nil {
-		return ctx.Response().Status(404).Json(map[string]interface{}{
+		return ctx.Response().Status(404).Json(map[string]any{
 			"error": "Activity not found",
 		})
 	}
 
-	return ctx.Response().Success().Json(map[string]interface{}{
+	return ctx.Response().Success().Json(map[string]any{
 		"data": activity,
 	})
 }
@@ -172,15 +172,15 @@ func (r *ActivityController) Update(ctx http.Context) http.Response {
 
 	// Find existing activity
 	if err := facades.Orm().Query().Where("id = ?", id).First(&activity).Error; err != nil {
-		return ctx.Response().Status(404).Json(map[string]interface{}{
+		return ctx.Response().Status(404).Json(map[string]any{
 			"error": "Activity not found",
 		})
 	}
 
 	// Parse request body
-	var updateData map[string]interface{}
+	var updateData map[string]any
 	if err := ctx.Request().Bind(&updateData); err != nil {
-		return ctx.Response().Status(400).Json(map[string]interface{}{
+		return ctx.Response().Status(400).Json(map[string]any{
 			"error": "Invalid request body",
 		})
 	}
@@ -190,7 +190,7 @@ func (r *ActivityController) Update(ctx http.Context) http.Response {
 	for key, value := range updateData {
 		_, err := facades.Orm().Query().Model(&activity).Update(key, value)
 		if err != nil {
-			return ctx.Response().Status(500).Json(map[string]interface{}{
+			return ctx.Response().Status(500).Json(map[string]any{
 				"error": err.Error(),
 			})
 		}
@@ -205,7 +205,7 @@ func (r *ActivityController) Update(ctx http.Context) http.Response {
 		// Don't return error - the activity was updated successfully
 	}
 
-	return ctx.Response().Success().Json(map[string]interface{}{
+	return ctx.Response().Success().Json(map[string]any{
 		"message": "Activity updated successfully",
 		"data":    activity,
 	})
@@ -218,7 +218,7 @@ func (r *ActivityController) Destroy(ctx http.Context) http.Response {
 
 	// Find activity before deleting to publish event
 	if err := facades.Orm().Query().Where("id = ?", id).First(&activity).Error; err != nil {
-		return ctx.Response().Status(404).Json(map[string]interface{}{
+		return ctx.Response().Status(404).Json(map[string]any{
 			"error": "Activity not found",
 		})
 	}
@@ -226,7 +226,7 @@ func (r *ActivityController) Destroy(ctx http.Context) http.Response {
 	// Delete the activity
 	_, err := facades.Orm().Query().Where("id = ?", id).Delete(&activity)
 	if err != nil {
-		return ctx.Response().Status(500).Json(map[string]interface{}{
+		return ctx.Response().Status(500).Json(map[string]any{
 			"error": err.Error(),
 		})
 	}
@@ -237,18 +237,18 @@ func (r *ActivityController) Destroy(ctx http.Context) http.Response {
 		// Don't return error - the activity was deleted successfully
 	}
 
-	return ctx.Response().Success().Json(map[string]interface{}{
+	return ctx.Response().Success().Json(map[string]any{
 		"message": "Activity deleted successfully",
 	})
 }
 
 // Health returns the health status of the service
 func (r *ActivityController) Health(ctx http.Context) http.Response {
-	return ctx.Response().Success().Json(map[string]interface{}{
+	return ctx.Response().Success().Json(map[string]any{
 		"status":    "healthy",
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 		"service":   "activity-service",
-		"kafka": map[string]interface{}{
+		"kafka": map[string]any{
 			"enabled": r.kafkaService.IsEnabled(),
 			"profile": facades.Config().GetString("kafka.profile", "local"),
 			"topic":   facades.Config().GetString("kafka.activity_events_topic", "activity-events"),

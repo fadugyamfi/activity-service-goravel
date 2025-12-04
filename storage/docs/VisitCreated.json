@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VisitCreated",
+  "description": "Schema for TopGolf visit creation events. This event is triggered when a visit is assigned to a bay at a TopGolf venue.",
+  "type": "object",
+  "required": [
+    "visitID",
+    "type",
+    "durationAtStartInSeconds",
+    "baysAtStart",
+    "playersAtStart",
+    "startTime",
+    "hasStartedAndCannotChange",
+    "tgCheckID",
+    "preVisitBufferSeconds",
+    "postVisitBufferSeconds"
+  ],
+  "properties": {
+    "visitID": {
+      "type": "string",
+      "description": "Unique identifier for the visit",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of the visit",
+      "enum": ["BAY_RESERVATION", "WALK_IN", "EVENT"]
+    },
+    "durationAtStartInSeconds": {
+      "type": "integer",
+      "description": "Duration of the visit in seconds at the time of creation"
+    },
+    "baysAtStart": {
+      "type": "array",
+      "description": "A list of all bays assigned to the visit at the time of creation",
+      "items": {
+        "type": "integer",
+        "description": "Bay number"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "playersAtStart": {
+      "type": "array",
+      "description": "A list of all players participating in the visit at the time of creation",
+      "items": {
+        "type": "object",
+        "description": "",
+        "properties": {
+          "playerID": {
+            "type": "string",
+            "description": "Unique identifier for the player",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name of the player"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of the player"
+          }
+        },
+      "uniqueItems": true,
+      "default": []
+      }
+    },
+    "startTime": {
+      "type": "string",
+      "description": "ISO 8601 timestamp representing when the visit is scheduled to start",
+      "format": "date-time"
+    },
+    "hasStartedAndCannotChange": {
+      "type": "boolean",
+      "description": "Indicates whether the visit has already started and can no longer be modified"
+    },
+    "tgCheckID": {
+      "type": "string",
+      "description": "Identifier for the TopGolf check record associated with this visit"
+    },
+    "preVisitBufferSeconds": {
+      "type": "integer",
+      "description": "Buffer time in seconds before the visit starts"
+    },
+    "postVisitBufferSeconds": {
+      "type": "integer",
+      "description": "Buffer time in seconds after the visit ends"
+    }
+  }
+}
